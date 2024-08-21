@@ -4,6 +4,8 @@ const itemList = document.getElementById('item-list');
 const clearButton = document.getElementById('clear');
 const itemFilter = document.getElementById('filter');
 const items = itemList.querySelectorAll('li');
+const formButton = itemForm.querySelector('button')
+let isEditMode = false;
 
 // display items function
 function displayItems()  {
@@ -31,7 +33,25 @@ function onAddItemSubmit(e)  {
         alert('Please add an item');
         return;
     }
-    // console.log('Success');67
+    // console.log('Success');
+
+    // Check for edit mode
+    // Remove the old item and replace it with the new item
+    if (isEditMode)   {
+        const itemToEdit = itemList.querySelector('edit-mode');
+
+        removeItemFromStorage(itemToEdit.textContent);
+        itemToEdit.classList.remove('edit-mode');
+        itemToEdit.remove();
+        isEditMode = false;
+        // Running check if item exists function
+    } else  {
+        if (checkIfItemExists(newItem)) {
+            alert('That Item Already Exists!');
+            return;
+        }
+    }
+
 
     // Create List Item
 //    const li =  document.createElement('li');
@@ -134,26 +154,97 @@ function getItemsFromStorage()   {
 // on click item function
 function onClickItem(e)  {
     if(e.target.parentElement.classList.contains('remove-item')) {
-        removeItem();
+        removeItem(e.target.parentElement.parentElement);
+    } else {
+        // console.log('One');
+        setItemToEdit(e.target);
     }
+}
 
+// Prevent Duplicate Items
+function checkIfItemExists(item)   {
+    // Get the items from local storage
+    const itemsFromStorage = getItemsFromStorage();
+
+    // Alternate way
+    return itemsFromStorage.includes(item);
+
+    // if (itemsFormStorage.includes(item))  {
+    //     return true;
+    // } else {
+    //     return false;
+    // }
+}
+
+// Set item to edit function
+function setItemToEdit(item)   {
+    isEditMode = true;
+
+    // Changing item colors when they are clicked on
+    itemList.querySelectorAll('li').forEach((i)   =>  {
+        i.classList.remove('edit-mode')
+
+    });
+
+    // Making the item text lighter
+    // item.style.color = 'grey'
+    // item.style.cursor = 'pointer';
+
+    // Adding the classList class instead of adding styles directly to the items
+    item.classList.add('edit-mode')
+
+    // Changing the innerHTML and the text
+    formButton.innerHTML = '<i class="fa-solid fa-pen"></i> Update Item';
+
+    // Adding text to the input form
+    itemInput.value = item.textContent;
+
+    // Changing Form Button color
+    formButton.style.backgroundColor  = 'firebrick';
 }
 
 // RemoveItem function
-function removeItem(e)  {
+function removeItem(item)  {
+    // console.log(item);
+
+    // Confirmation
+    if (confirm('Are You Sure?'))  {
+        // Remove item from the DOM
+        item.remove();
+
+        // Remove item from Storage
+        removeItemFromStorage(item.textContent);
+
+        checkUI();
+    }
+
+    // Remove item from storage function
+    function removeItemFromStorage(item)   {
+        let itemsFromStorage = getItemsFromStorage();
+
+        // console.log(itemsFromStorage);
+
+        // Filter out item to be removed
+        itemsFromStorage = itemsFromStorage.filter((i)  => i !==item);
+
+        // Re-set to localStorage
+    localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+    }
+
+
     // console.log(e.target.parentElement.classList);
 
-    if(e.target.parentElement.classList.contains('remove-item'))  {
+    // if(e.target.parentElement.classList.contains('remove-item'))  {
         // console.log('click');
 
         // adding confrim() which shows an alert message before deleting the item
-        if (confirm('Are You Sure?'))  {
-            e.target.parentElement.parentElement.remove();
+        // if (confirm('Are You Sure?'))  {
+            // e.target.parentElement.parentElement.remove();
 
     //  Calling checkUI inside removeItem so filter and clear all button goes away
-            checkUI();
-        }
-    }
+//             checkUI();
+//         }
+//     }
 }
 
 // clearItems Function
@@ -161,16 +252,18 @@ function clearItems()   {
 
     // Method 1
     // itemList.innerHTML = '';
-
+// 
     // Using while loop
     while (itemList.firstChild)  {
         itemList.removeChild(itemList.firstChild)
     }
 
+    // Clear from localStorage
+    localStorage.removeItem('items');
+
     // calling checkUI() inside clearItems function so the filter and clearall button goes away
     checkUI();
 }
-
 
 function filterItems(e)  {
     // Getting the items
@@ -206,6 +299,10 @@ function filterItems(e)  {
 
 // Clear UI State
 function checkUI()  {
+    // Clear the input when the UI is reset
+    itemInput.value = '';
+
+
     // running items inside of the function instead of the global scope 
 const items = itemList.querySelectorAll('li');
     // console.log(items);
@@ -216,6 +313,12 @@ const items = itemList.querySelectorAll('li');
         clearButton.style.display = 'block'
         itemFilter.style.display = 'block';
     }
+
+    // Adding back the button class and changing the background color
+    formButton.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+    formButton.style.backgroundColor = '#333';
+
+    isEditMode= false;
 }
 
 // Initialize app so we dont have it all in the global scope
