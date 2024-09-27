@@ -346,14 +346,5 @@ checkUI();
 init();
 
 
-// localStorage and sessionStorage
-// let output = localStorage.setItem('name', 'Brad');
-
-// output = localStorage.getItem('name');
-// output = localStorage.removeItem('name')
-// output = localStorage.clear();
-// console.log(output);
-
-
 
 
